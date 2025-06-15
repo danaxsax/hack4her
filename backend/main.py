@@ -2,8 +2,6 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from llms.router import chat_router
 from auth.auth import auth_router, verify_access_token
-from api_keys.api_keys import keys_router
-from payment.payment import buy_router
 
 
 app = FastAPI(docs_url='/docs')

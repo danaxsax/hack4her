@@ -4,40 +4,42 @@ import os
 import sys
 import re
 import requests
+import os
+from dotenv import load
+
+TOKEN = load.os.getenv('TOKEN')  # Asegúrate de definir tu token en las variables de entorno
 
 LOG_FILE = 'results.log'
 CSV_FILE = 'data.csv'
 
 # Lista blanca de clases de actividad permitidas
 CLASES_PERMITIDAS = {
-    "BARES, CANTINAS Y SIMILARES",
-    "CABAÑAS, VILLAS Y SIMILARES",
-    "CAFETERÍAS, FUENTES DE SODAS, NEVERÍAS, REFRESQUERÍAS Y SIMILARES",
-    "CAMPAMENTOS Y ALBERGUES RECREATIVOS",
-    "CENTROS NOCTURNOS, DISCOTECAS Y SIMILARES",
-    "COMERCIO AL POR MAYOR DE ABARROTES",
-    "COMERCIO AL POR MAYOR DE BEBIDAS NO ALCOHÓLICAS Y HIELO",
-    "COMERCIO AL POR MAYOR DE BOTANAS Y FRITURAS",
-    "COMERCIO AL POR MAYOR DE OTROS ALIMENTOS",
-    "COMERCIO AL POR MAYOR DE VINOS Y LICORES",
-    "COMERCIO AL POR MENOR DE BEBIDAS NO ALCOHÓLICAS Y HIELO",
-    "COMERCIO AL POR MENOR DE OTROS ALIMENTOS",
-    "COMERCIO AL POR MENOR DE PALETAS DE HIELO Y HELADOS",
-    "COMERCIO AL POR MENOR EN TIENDAS DE ABARROTES, ULTRAMARINOS Y MISCELÁNEAS",
-    "COMERCIO AL POR MENOR EN TIENDAS DEPARTAMENTALES",
-    "FARMACIAS CON MINISÚPER",
-    "HOTELES CON OTROS SERVICIOS INTEGRADOS",
-    "HOTELES SIN OTROS SERVICIOS INTEGRADOS",
-    "RESTAURANTES CON SERVICIO DE PREPARACIÓN DE ALIMENTOS A LA CARTA O DE COMIDA CORRIDA",
-    "RESTAURANTES CON SERVICIO DE PREPARACIÓN DE ANTOJITOS",
-    "RESTAURANTES CON SERVICIO DE PREPARACIÓN DE PESCADOS Y MARISCOS",
-    "RESTAURANTES CON SERVICIO DE PREPARACIÓN DE PIZZAS, HAMBURGUESAS, HOT DOGS Y POLLOS ROSTIZADOS PARA LLEVAR",
-    "RESTAURANTES CON SERVICIO DE PREPARACIÓN DE TACOS Y TORTAS",
-    "RESTAURANTES QUE PREPARAN OTRO TIPO DE ALIMENTOS PARA LLEVAR",
-    "SERVICIOS DE COMEDOR PARA EMPRESAS E INSTITUCIONES",
-    "SERVICIOS DE PREPARACIÓN DE ALIMENTOS EN UNIDADES MÓVILES",
-    "SERVICIOS DE PREPARACIÓN DE ALIMENTOS PARA OCASIONES ESPECIALES",
-    "SERVICIOS DE PREPARACIÓN DE OTROS ALIMENTOS PARA CONSUMO INMEDIATO"
+    "Cafeterías, fuentes de sodas, neverías, refresquerías y similares",
+    "Campamentos y albergues recreativos",
+    "Centros nocturnos, discotecas y similares",
+    "Comercio al por mayor de abarrotes",
+    "Comercio al por mayor de bebidas no alcohólicas y hielo",
+    "Comercio al por mayor de botanas y frituras",
+    "Comercio al por mayor de otros alimentos",
+    "Comercio al por mayor de vinos y licores",
+    "Comercio al por menor de bebidas no alcohólicas y hielo",
+    "Comercio al por menor de otros alimentos",
+    "Comercio al por menor de paletas de hielo y helados",
+    "Comercio al por menor en tiendas de abarrotes, ultramarinos y misceláneas",
+    "Comercio al por menor en tiendas departamentales",
+    "Farmacias con minisúper",
+    "Hoteles con otros servicios integrados",
+    "Hoteles sin otros servicios integrados",
+    "Restaurantes con servicio de preparación de alimentos a la carta o de comida corrida",
+    "Restaurantes con servicio de preparación de antojitos",
+    "Restaurantes con servicio de preparación de pescados y mariscos",
+    "Restaurantes con servicio de preparación de pizzas, hamburguesas, hot dogs y pollos rostizados para llevar",
+    "Restaurantes con servicio de preparación de tacos y tortas",
+    "Restaurantes que preparan otro tipo de alimentos para llevar",
+    "Servicios de comedor para empresas e instituciones",
+    "Servicios de preparación de alimentos en unidades móviles",
+    "Servicios de preparación de alimentos para ocasiones especiales",
+    "Servicios de preparación de otros alimentos para consumo inmediato"
 }
 
 # Función para pedir confirmación y borrar archivos si existen
@@ -80,9 +82,9 @@ def extraer_max_estrato(estrato: str) -> str:
     return "No disponible"
 
 # Petición al API y procesamiento
-TOKEN = "5cded4fb-4e60-4cc0-b129-bb225c4040d9"
 sector_ids = [43, 46, 72]
-BASE_URL = "https://www.inegi.org.mx/app/api/denue/v1/consulta/BuscarAreaActEstr/00/0/0/0/0/{}/0/0/0/0/1/50/0/0/{}"
+BASE_URL = "https://www.inegi.org.mx/app/api/denue/v1/consulta/BuscarAreaActEstr/19/0/0/0/0/{}/0/0/0/0/1/50000000/0/0/{}"
+
 
 def fetch_and_log(sector_id):
     url = BASE_URL.format(sector_id, TOKEN)
@@ -95,16 +97,14 @@ def fetch_and_log(sector_id):
             writer = csv.writer(file)
 
             for entry in data:
-                clase_actividad = entry.get("Clase_actividad", "").strip().upper()
+                clase_actividad = entry.get("Clase_actividad", "").strip()
                 if clase_actividad not in CLASES_PERMITIDAS:
                     continue  # Filtrado
 
                 estrato_original = entry.get("Estrato", "No disponible")
                 tamaño_max = extraer_max_estrato(estrato_original)
                 nombre = entry.get("Nombre", "No disponible")
-                cp = entry.get("CP")
-                if not cp or str(cp).strip() == "":
-                    cp = "03560"
+                cp = entry.get("CP", "No disponible")
                 longitud = entry.get("Longitud", "No disponible")
                 latitud = entry.get("Latitud", "No disponible")
 
